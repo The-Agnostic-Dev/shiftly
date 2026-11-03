@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en-NG">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{title}} · Shiftly</title>
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+  {{#unless bare}}{{> nav}}{{/unless}}
+  <main class="container{{#if bare}} narrow{{/if}}">
+    {{> flash}}
+    {{{body}}}
+  </main>
+  <footer class="footer">Shiftly for Bukka Republic · Times shown in Lagos time</footer>
+  <script src="/static/js/app.js" defer></script>
+</body>
+</html>

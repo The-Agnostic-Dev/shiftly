@@ -1,0 +1,32 @@
+<div class="page-head"><h1>{{title}}</h1><p class="muted">{{branch.name}}</p></div>
+<section class="card">
+  <form method="post" action="{{action}}" class="stack form-grid">
+    <label>Who
+      <select name="staffId" id="staffId">
+        <option value="">Open shift (anyone in the branch can take it)</option>
+        {{#each people}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}} ({{position}})</option>{{/each}}
+      </select>
+    </label>
+    <label>Date <input type="date" name="date" id="date" value="{{shift.date}}" required></label>
+    <label>Starts <input type="time" name="start" id="start" value="{{shift.start}}" step="300" required></label>
+    <label>Ends <input type="time" name="end" id="end" value="{{shift.end}}" step="300" required>
+      <small class="muted">If it ends after midnight, just put the finishing time (e.g. 06:00).</small>
+    </label>
+    <label>Position
+      <select name="position" id="position" required>
+        <option value="">Choose…</option>
+        {{#each positions}}<option {{#if (eq this ../shift.position)}}selected{{/if}}>{{this}}</option>{{/each}}
+      </select>
+    </label>
+    <label>Note <input name="note" id="note" value="{{shift.note}}" maxlength="200" placeholder="Optional"></label>
+    <div class="actions">
+      <button class="btn btn-primary">{{#if editing}}Save changes{{else}}Add shift{{/if}}</button>
+      <a class="btn" href="/rota?week={{shift.date}}">Cancel</a>
+    </div>
+  </form>
+  {{#if editing}}
+  <form method="post" action="/shifts/{{shift.id}}/delete" data-confirm="Remove this shift from the rota?" class="danger-zone">
+    <button class="btn btn-danger">Remove shift</button>
+  </form>
+  {{/if}}
+</section>

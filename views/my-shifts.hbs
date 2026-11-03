@@ -1,0 +1,46 @@
+<div class="page-head">
+  <div><h1>My shifts</h1><p class="muted">{{branch.name}} · coming up from today</p></div>
+  <a class="btn" href="/availability">Set my availability</a>
+</div>
+
+<section class="card">
+  <table class="table" data-testid="my-shifts">
+    <thead><tr><th>Day</th><th>Time</th><th>Position</th><th>Hours</th><th></th></tr></thead>
+    <tbody>
+      {{#each shifts}}
+      <tr data-shift-id="{{id}}">
+        <td>{{day}}</td>
+        <td>{{start}}&ndash;{{end}}{{#if overnight}} <sup>+1</sup>{{/if}}</td>
+        <td>{{position}}</td>
+        <td class="num">{{hours}}</td>
+        <td class="right"><a class="btn btn-small" href="/swaps/new?shift={{id}}">Ask for a swap</a></td>
+      </tr>
+      {{else}}
+      <tr><td colspan="5" class="muted">No shifts coming up.</td></tr>
+      {{/each}}
+    </tbody>
+  </table>
+</section>
+
+<section class="card">
+  <h2>Open shifts at {{branch.name}}</h2>
+  <p class="muted">First come, first served. Once you take a shift it is yours, so make sure you can do it.</p>
+  <table class="table" data-testid="open-shifts">
+    <thead><tr><th>Day</th><th>Time</th><th>Position</th><th>Note</th><th></th></tr></thead>
+    <tbody>
+      {{#each open}}
+      <tr data-shift-id="{{id}}">
+        <td>{{day}}</td>
+        <td>{{start}}&ndash;{{end}}{{#if overnight}} <sup>+1</sup>{{/if}}</td>
+        <td>{{position}}</td>
+        <td>{{note}}</td>
+        <td class="right">
+          <form method="post" action="/shifts/{{id}}/claim" class="inline"><button class="btn btn-small btn-primary">Take this shift</button></form>
+        </td>
+      </tr>
+      {{else}}
+      <tr><td colspan="5" class="muted">No open shifts right now.</td></tr>
+      {{/each}}
+    </tbody>
+  </table>
+</section>

@@ -1,0 +1,46 @@
+<div class="page-head">
+  <div>
+    <h1>Shift swaps</h1>
+    <p class="muted">{{pendingCount}} waiting for a decision. A swap only happens once the branch manager approves it.</p>
+  </div>
+  {{#if isStaff}}<a class="btn" href="/my-shifts">Ask for a swap from My shifts</a>{{/if}}
+</div>
+
+<section class="card">
+  <table class="table" data-testid="swaps">
+    <thead>
+      <tr><th>Requested</th><th>Shift</th><th>From</th><th>To</th><th>Reason</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+      {{#each rows}}
+      <tr data-swap-id="{{id}}" class="status-{{status}}">
+        <td><time datetime="{{createdAt}}">{{requestedAt}}</time></td>
+        <td>{{shiftDay}}{{#if shift}}<br><small class="muted">{{shift.start}}&ndash;{{shift.end}} {{shift.position}}</small>{{/if}}</td>
+        <td>{{fromName}}</td>
+        <td>{{toName}}</td>
+        <td>{{reason}}</td>
+        <td><span class="badge badge-{{status}}">{{statusLabel status}}</span>{{#if decidedBy}}<br><small class="muted">{{decidedBy}}, {{decidedAtText}}</small>{{/if}}</td>
+        <td class="right nowrap">
+          {{#if pending}}
+            {{#if @root.isManager}}
+            <form method="post" action="/swaps/{{id}}/approve" class="inline">
+              <button class="btn btn-small btn-primary">Approve</button>
+            </form>
+            <form method="post" action="/swaps/{{id}}/decline" class="inline" data-confirm="Decline this swap request?">
+              <button type="button" class="btn btn-small btn-danger">Decline</button>
+            </form>
+            {{/if}}
+            {{#if mine}}
+            <form method="post" action="/swaps/{{id}}/withdraw" class="inline" data-confirm="Withdraw your request?">
+              <button class="btn btn-small">Withdraw</button>
+            </form>
+            {{/if}}
+          {{/if}}
+        </td>
+      </tr>
+      {{else}}
+      <tr><td colspan="7" class="muted">No swap requests yet.</td></tr>
+      {{/each}}
+    </tbody>
+  </table>
+</section>

@@ -1,0 +1,23 @@
+<header class="topbar">
+  <a class="brand" href="/">Shiftly</a>
+  {{#if currentUser}}
+  <nav class="menu">
+    {{#if (eq currentUser.role "staff")}}
+      <a href="/my-shifts">My shifts</a>
+      <a href="/rota">Branch rota</a>
+      <a href="/swaps">My swaps</a>
+      <a href="/availability">Availability</a>
+    {{else}}
+      <a href="/rota">Rota</a>
+      <a href="/swaps">Swaps</a>
+      <a href="/hours">Hours</a>
+      <a href="/staff">Staff</a>
+    {{/if}}
+  </nav>
+  <div class="who">
+    <span class="avatar">{{initials currentUser.name}}</span>
+    <span>{{currentUser.name}}</span>
+    <form method="post" action="/logout" class="inline"><button class="link">Log out</button></form>
+  </div>
+  {{/if}}
+</header>

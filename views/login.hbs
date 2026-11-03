@@ -1,0 +1,10 @@
+<section class="card login">
+  <h1>Shiftly</h1>
+  <p class="muted">Staff rota for Bukka Republic restaurants</p>
+  {{#if error}}<div class="flash flash-error">{{error}}</div>{{/if}}
+  <form method="post" action="/login" class="stack">
+    <label>Username <input name="username" id="username" value="{{username}}" autocomplete="username" required autofocus></label>
+    <label>Password <input name="password" id="password" type="password" autocomplete="current-password" required></label>
+    <button class="btn btn-primary">Log in</button>
+  </form>
+</section>

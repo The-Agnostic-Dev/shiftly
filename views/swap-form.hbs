@@ -1,0 +1,19 @@
+<div class="page-head"><h1>Ask for a swap</h1></div>
+<section class="card">
+  <p>Your shift: <strong>{{shift.day}}, {{shift.start}}&ndash;{{shift.end}}</strong> ({{shift.position}})</p>
+  <p class="muted">Your manager has to approve the swap. Until then the shift is still yours.</p>
+  <form method="post" action="/swaps" class="stack">
+    <input type="hidden" name="shiftId" value="{{shift.id}}">
+    <label>Who should take it?
+      <select name="toStaffId" id="toStaffId" required>
+        <option value="">Choose a colleague…</option>
+        {{#each colleagues}}<option value="{{id}}">{{name}}</option>{{/each}}
+      </select>
+    </label>
+    <label>Reason <input name="reason" id="reason" maxlength="200" placeholder="So your manager knows"></label>
+    <div class="actions">
+      <button class="btn btn-primary">Send request</button>
+      <a class="btn" href="/my-shifts">Cancel</a>
+    </div>
+  </form>
+</section>

@@ -1,0 +1,13 @@
+<div class="page-head"><h1>My availability</h1></div>
+<section class="card">
+  <p>Tick the days you <strong>cannot</strong> work. Your manager sees a warning on the rota if you are put on one of these days, and you will not be able to take open shifts on them.</p>
+  <form method="post" action="/availability" class="stack">
+    <fieldset class="days">
+      {{#each days}}
+      <label class="check"><input type="checkbox" name="days" value="{{value}}" {{#if checked}}checked{{/if}}> {{label}}</label>
+      {{/each}}
+    </fieldset>
+    <label>Anything your manager should know? <input name="note" id="note" value="{{note}}" maxlength="200"></label>
+    <div class="actions"><button class="btn btn-primary">Save availability</button></div>
+  </form>
+</section>

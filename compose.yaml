@@ -1,0 +1,9 @@
+services:
+  shiftly:
+    build: .
+    ports:
+      - "5113:5113"
+    environment:
+      PORT: "5113"
+      TZ: Africa/Lagos
+    restart: unless-stopped

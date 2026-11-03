@@ -1,0 +1,29 @@
+<div class="page-head">
+  <div><h1>Staff</h1><p class="muted">{{members.length}} people</p></div>
+  {{#if canEdit}}
+  <form method="get" action="/staff" class="inline">
+    <select name="branch" onchange="this.form.submit()" aria-label="Branch">
+      <option value="">All branches</option>
+      {{#each branches}}<option value="{{id}}" {{#if (eq id ../branchId)}}selected{{/if}}>{{name}}</option>{{/each}}
+    </select>
+  </form>
+  {{/if}}
+</div>
+<section class="card">
+  <table class="table" data-testid="staff">
+    <thead><tr><th>Name</th><th>Position</th><th>Branch</th><th>Phone</th><th class="num">Hourly rate</th><th>Can't work</th>{{#if canEdit}}<th></th>{{/if}}</tr></thead>
+    <tbody>
+      {{#each members}}
+      <tr data-staff-id="{{id}}">
+        <td class="name">{{name}}</td>
+        <td>{{position}}</td>
+        <td class="branch">{{branchName}}</td>
+        <td>{{phone}}</td>
+        <td class="num rate">{{naira hourlyRate}}</td>
+        <td>{{#if unavailable}}{{unavailable}}{{else}}<span class="muted">Any day</span>{{/if}}</td>
+        {{#if @root.canEdit}}<td class="right"><a class="btn btn-small" href="/staff/{{id}}/edit">Edit</a></td>{{/if}}
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</section>

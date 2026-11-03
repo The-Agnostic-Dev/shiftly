@@ -1,0 +1,22 @@
+<div class="page-head"><h1>{{title}}</h1></div>
+<section class="card">
+  <form method="post" action="/staff/{{member.id}}" class="stack form-grid">
+    <label>Full name <input name="name" id="name" value="{{member.name}}" required></label>
+    <label>Position
+      <select name="position" id="position">
+        {{#each positions}}<option {{#if (eq this ../member.position)}}selected{{/if}}>{{this}}</option>{{/each}}
+      </select>
+    </label>
+    <label>Branch
+      <select name="branchId" id="branchId">
+        {{#each branches}}<option value="{{id}}" {{#if (eq id ../member.branchId)}}selected{{/if}}>{{name}}</option>{{/each}}
+      </select>
+    </label>
+    <label>Phone <input name="phone" id="phone" value="{{member.phone}}" inputmode="tel"></label>
+    <label>Hourly rate (₦) <input name="hourlyRate" id="hourlyRate" value="{{amount member.hourlyRate}}" inputmode="decimal" required></label>
+    <div class="actions">
+      <button class="btn btn-primary">Save</button>
+      <a class="btn" href="/staff">Cancel</a>
+    </div>
+  </form>
+</section>

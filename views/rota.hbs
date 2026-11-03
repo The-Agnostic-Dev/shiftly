@@ -1,0 +1,72 @@
+<div class="page-head">
+  <div>
+    <h1>{{branch.name}} rota</h1>
+    <p class="muted">{{branch.address}} · {{rota.shiftCount}} shifts this week</p>
+  </div>
+  <div class="actions">
+    {{#if branches}}
+    <form method="get" action="/rota" class="inline">
+      <input type="hidden" name="week" value="{{week}}">
+      <select name="branch" onchange="this.form.submit()" aria-label="Branch">
+        {{#each branches}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}
+      </select>
+    </form>
+    {{/if}}
+    {{#if canEdit}}<a class="btn btn-primary" href="/shifts/new">Add shift</a>{{/if}}
+  </div>
+</div>
+
+{{> week_nav}}
+{{#unless isThisWeek}}<p class="center"><a href="/rota{{#if branches}}?branch={{branch.id}}{{/if}}">Back to this week</a></p>{{/unless}}
+
+<div class="scroll">
+<table class="rota" data-testid="rota">
+  <thead>
+    <tr>
+      <th class="who-col">Staff</th>
+      {{#each rota.days}}
+      <th data-date="{{date}}" class="{{#if today}}today{{/if}}">{{dayName date}} <span class="muted">{{dayMonth date}}</span></th>
+      {{/each}}
+      <th>Hours</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each rota.rows}}
+    <tr data-staff-id="{{staffId}}">
+      <th class="who-col"><span class="name">{{name}}</span><small class="muted">{{position}}</small></th>
+      {{#each cells}}
+      <td class="cell" data-date="{{date}}">
+        {{#each shifts}}{{> shift_chip}}{{/each}}
+        {{#if @root.canEdit}}{{#unless shifts.length}}<a class="add" href="/shifts/new?date={{date}}&staff={{../staffId}}" aria-label="Add shift">+</a>{{/unless}}{{/if}}
+      </td>
+      {{/each}}
+      <td class="num">{{hours}}</td>
+    </tr>
+    {{/each}}
+    <tr class="open-row" data-staff-id="open">
+      <th class="who-col"><span class="name">{{rota.openRow.name}}</span><small class="muted">{{rota.openRow.position}}</small></th>
+      {{#each rota.openRow.cells}}
+      <td class="cell" data-date="{{date}}">{{#each shifts}}{{> shift_chip}}{{/each}}</td>
+      {{/each}}
+      <td></td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr>
+      <th class="who-col">Staff on</th>
+      {{#each rota.days}}<td class="num">{{headcount}}</td>{{/each}}
+      <td></td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+<p class="muted small">Overnight shifts (marked +1) are listed on the day they start and finish the next morning.</p>
+
+{{#if activity.length}}
+<section class="card">
+  <h2>Recent activity</h2>
+  <ul class="activity">
+    {{#each activity}}<li><time>{{when}}</time> {{actor}} {{message}}</li>{{/each}}
+  </ul>
+</section>
+{{/if}}
