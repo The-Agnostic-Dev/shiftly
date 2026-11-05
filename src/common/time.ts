@@ -62,6 +62,9 @@ export function splitShift(shift: { date: string; start: string; end: string }):
 
   const firstDayMinutes = DAY_MINUTES - toMinutes(shift.start);
   const nextDayMinutes = shiftMinutes(shift.start, shift.end) - firstDayMinutes;
+  if (nextDayMinutes === 0) {
+    return [{ date: shift.date, start: shift.start, end: shift.end, minutes: shiftMinutes(shift.start, shift.end) }];
+  }
   return [
     { date: shift.date, start: shift.start, end: '24:00', minutes: firstDayMinutes },
     { date: addDays(shift.date, 1), start: '00:00', end: shift.end, minutes: nextDayMinutes },

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AvailabilityService } from '../availability/availability.service';
-import { addDays, todayInLagos, weekDates } from '../common/dates';
+import { addDays, isoWeekday, todayInLagos, weekDates } from '../common/dates';
 import { formatHours, isOvernight, shiftMinutes, splitShift } from '../common/time';
 import type { ShiftPortion } from '../common/time';
 import { ShiftsService } from '../shifts/shifts.service';
@@ -62,8 +62,8 @@ export class RotaService {
       start: portion.start,
       end: portion.end,
       hours: formatHours(portion.minutes),
-      overnight: isOvernight(portion.start, portion.end),
-      unavailable: offDays.includes(new Date(`${portion.date}T00:00:00Z`).getUTCDay()),
+      overnight: portion.date === portion.shift.date && isOvernight(portion.shift.start, portion.shift.end),
+      unavailable: offDays.includes(isoWeekday(portion.shift.date)),
     });
 
     const rowFor = (staffId: number | null, name: string, position: string): RotaRow => {
@@ -90,7 +90,7 @@ export class RotaService {
       })),
       rows,
       openRow: rowFor(null, 'Open shifts', 'Anyone in the branch can take these'),
-      shiftCount: portions.length,
+      shiftCount: new Set(portions.map((p) => p.shift.id)).size,
     };
   }
 }

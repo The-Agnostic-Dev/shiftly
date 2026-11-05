@@ -24,4 +24,15 @@ describe('RotaService', () => {
     expect(chidi.cells[0].shifts).toContainEqual(expect.objectContaining({ start: '00:00', end: '06:00' }));
     expect(grid.days[0].headcount).toBeGreaterThan(0);
   });
+
+  it('keeps a midnight-ending shift on its start day without a phantom next-day chip', () => {
+    const grid = rota().week('ikeja', week);
+    const obinna = grid.rows.find((r) => r.name === 'Obinna Uche')!;
+    const thursday = obinna.cells[3];
+    expect(thursday.shifts).toContainEqual(expect.objectContaining({ start: '16:00', end: '00:00', overnight: true }));
+    expect(thursday.shifts).not.toContainEqual(expect.objectContaining({ start: '00:00', end: '00:00' }));
+    expect(obinna.cells[4].shifts).toEqual([]);
+    expect(grid.days[4].headcount).toBe(3);
+    expect(grid.shiftCount).toBe(24);
+  });
 });

@@ -35,6 +35,12 @@ describe('shift times', () => {
     ]);
   });
 
+  it('does not split a shift that ends at midnight into a phantom next-day portion', () => {
+    expect(splitShift({ date: '2026-01-04', start: '16:00', end: '00:00' })).toEqual([
+      { date: '2026-01-04', start: '16:00', end: '00:00', minutes: 480 },
+    ]);
+  });
+
   it('formats hours without trailing zeros', () => {
     expect(formatHours(480)).toBe('8');
     expect(formatHours(570)).toBe('9.5');
