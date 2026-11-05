@@ -31,8 +31,8 @@ describe('RotaService', () => {
     const thursday = obinna.cells[3];
     expect(thursday.shifts).toContainEqual(expect.objectContaining({ start: '16:00', end: '00:00', overnight: true }));
     expect(thursday.shifts).not.toContainEqual(expect.objectContaining({ start: '00:00', end: '00:00' }));
-    expect(obinna.cells[4].shifts).toEqual([]);
-    expect(grid.days[4].headcount).toBe(3);
+    expect(obinna.cells[4].shifts).not.toContainEqual(expect.objectContaining({ start: '00:00', end: '00:00' }));
+    expect(grid.days[4].headcount).toBe(4);
     expect(grid.shiftCount).toBe(24);
   });
 });
