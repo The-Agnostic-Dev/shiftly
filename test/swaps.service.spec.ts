@@ -44,8 +44,8 @@ describe('SwapsService', () => {
   it('only lets staff swap with colleagues at the same branch', async () => {
     const ctx = services();
     const shift = shiftOf(ctx, 7, addDays(nextWeek, 3));
-    await expect(ctx.swaps.request(shift.id, 7, 9, 'Exam')).rejects.toThrow(BadRequestException);
-    await expect(ctx.swaps.request(shift.id, 7, 7, 'Exam')).rejects.toThrow(BadRequestException);
+      await expect(ctx.swaps.request(shift.id, 7, 9, 'Exam')).rejects.toThrow(new BadRequestException('Please choose a colleague from your branch.'));
+      await expect(ctx.swaps.request(shift.id, 7, 7, 'Exam')).rejects.toThrow(new BadRequestException('Please choose a colleague from your branch.'));
     const swap = await ctx.swaps.request(shift.id, 7, 6, 'Exam');
     expect(swap.status).toBe('pending');
     await expect(ctx.swaps.request(shift.id, 7, 1, 'Exam')).rejects.toThrow(ConflictException);
