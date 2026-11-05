@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { addDays } from '../common/dates';
 import { OVERTIME_MULTIPLIER, roundKobo, STANDARD_WEEK_HOURS } from '../common/money';
 import { RotaEvents } from '../common/rota-events';
-import { toMinutes } from '../common/time';
+import { shiftMinutes } from '../common/time';
 import { StaffService } from '../staff/staff.service';
 import { StoreService } from '../store/store.service';
 import type { Shift, StaffMember } from '../store/types';
@@ -76,7 +76,7 @@ export class HoursService {
       if (shift.date < weekStart || shift.date > weekEnd) continue;
       const tally = tallies.get(shift.staffId) ?? { shifts: 0, minutes: 0 };
       tally.shifts += 1;
-      tally.minutes += workedMinutes(shift);
+      tally.minutes += shiftMinutes(shift.start, shift.end);
       tallies.set(shift.staffId, tally);
     }
     this.tallies.set(key, tallies);
@@ -90,7 +90,3 @@ export class HoursService {
   }
 }
 
-/** Minutes worked on a shift. Overnight shifts count in full on the day they start. */
-function workedMinutes(shift: Shift): number {
-  return Math.max(0, toMinutes(shift.end) - toMinutes(shift.start));
-}
