@@ -1,5 +1,5 @@
 {{#if @root.canEdit}}<a{{else}}<span{{/if}} id="shift-{{id}}" class="chip{{#if unavailable}} chip-warn{{/if}}" data-shift-id="{{id}}"{{#if @root.canEdit}} href="/shifts/{{id}}/edit"{{/if}}{{#if note}} title="{{note}}"{{/if}}>
-  <span class="time">{{start}}&ndash;{{end}}{{#if overnight}} <sup>+1</sup>{{/if}}</span>
-  <span class="meta">{{position}} · {{hours}}h</span>
+  <span class="time">{{start}}&ndash;{{end}}</span>
+  <span class="meta">{{#if continuation}}continues · {{/if}}{{position}} · {{hours}}h</span>
   {{#if unavailable}}<span class="badge badge-warn" title="Marked unavailable on this day">Unavailable</span>{{/if}}
 {{#if @root.canEdit}}</a>{{else}}</span>{{/if}}

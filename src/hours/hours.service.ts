@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { addDays } from '../common/dates';
 import { OVERTIME_MULTIPLIER, roundKobo, STANDARD_WEEK_HOURS } from '../common/money';
 import { RotaEvents } from '../common/rota-events';
-import { toMinutes } from '../common/time';
+import { splitShift } from '../common/time';
 import { StaffService } from '../staff/staff.service';
 import { StoreService } from '../store/store.service';
 import type { Shift, StaffMember } from '../store/types';
@@ -70,14 +70,25 @@ export class HoursService {
     if (cached) return cached;
 
     const weekEnd = addDays(weekStart, 6);
+    const scanStart = addDays(weekStart, -1);
     const tallies = new Map<number, Tally>();
     for (const shift of this.store.db.shifts) {
       if (shift.branchId !== branchId || shift.staffId === null) continue;
-      if (shift.date < weekStart || shift.date > weekEnd) continue;
-      const tally = tallies.get(shift.staffId) ?? { shifts: 0, minutes: 0 };
-      tally.shifts += 1;
-      tally.minutes += workedMinutes(shift);
-      tallies.set(shift.staffId, tally);
+      if (shift.date < scanStart || shift.date > weekEnd) continue;
+
+      if (shift.date >= weekStart && shift.date <= weekEnd) {
+        const tally = tallies.get(shift.staffId) ?? { shifts: 0, minutes: 0 };
+        tally.shifts += 1;
+        tallies.set(shift.staffId, tally);
+      }
+
+      for (const segment of splitShift(shift)) {
+        const segmentDate = addDays(shift.date, segment.dayOffset);
+        if (segmentDate < weekStart || segmentDate > weekEnd) continue;
+        const tally = tallies.get(shift.staffId) ?? { shifts: 0, minutes: 0 };
+        tally.minutes += segment.minutes;
+        tallies.set(shift.staffId, tally);
+      }
     }
     this.tallies.set(key, tallies);
     return tallies;
@@ -90,7 +101,4 @@ export class HoursService {
   }
 }
 
-/** Minutes worked on a shift. Overnight shifts count in full on the day they start. */
-function workedMinutes(shift: Shift): number {
-  return Math.max(0, toMinutes(shift.end) - toMinutes(shift.start));
-}
+

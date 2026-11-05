@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AvailabilityService } from '../availability/availability.service';
-import { addDays, todayInLagos, weekDates } from '../common/dates';
-import { formatHours, isOvernight, shiftMinutes } from '../common/time';
+import { addDays, isoWeekday, todayInLagos, weekDates } from '../common/dates';
+import { formatHours, isOvernight, splitShift, type ShiftSegment } from '../common/time';
 import { ShiftsService } from '../shifts/shifts.service';
 import { StaffService } from '../staff/staff.service';
 import type { Shift } from '../store/types';
@@ -9,6 +9,7 @@ import type { Shift } from '../store/types';
 export interface RotaShift extends Shift {
   hours: string;
   overnight: boolean;
+  continuation: boolean;
   unavailable: boolean;
 }
 
@@ -43,40 +44,62 @@ export class RotaService {
   week(branchId: string, start: string): RotaWeek {
     const dates = weekDates(start);
     const today = todayInLagos();
-    const shifts = this.shifts.forBranch(branchId, start, addDays(start, 6));
+    const shifts = this.shifts.forBranch(branchId, addDays(start, -1), addDays(start, 6));
 
-    const decorate = (shift: Shift, offDays: number[]): RotaShift => ({
+    const decorate = (shift: Shift, segment: ShiftSegment, date: string, offDays: number[]): RotaShift => ({
       ...shift,
-      hours: formatHours(shiftMinutes(shift.start, shift.end)),
+      date,
+      start: segment.start,
+      end: segment.end,
+      hours: formatHours(segment.minutes),
       overnight: isOvernight(shift.start, shift.end),
-      unavailable: offDays.includes(new Date(`${shift.date}T00:00:00Z`).getUTCDay()),
+      continuation: segment.dayOffset === 1,
+      unavailable: offDays.includes(isoWeekday(date)),
     });
 
     const rowFor = (staffId: number | null, name: string, position: string): RotaRow => {
       const offDays = staffId === null ? [] : this.availability.daysFor(staffId);
       const mine = shifts.filter((s) => s.staffId === staffId);
+      const cells = dates.map((date) => ({ date, shifts: [] as RotaShift[] }));
+      let totalMinutes = 0;
+      for (const shift of mine) {
+        for (const segment of splitShift(shift)) {
+          const segDate = addDays(shift.date, segment.dayOffset);
+          if (!dates.includes(segDate)) continue;
+          const cell = cells.find((c) => c.date === segDate);
+          if (cell) {
+            cell.shifts.push(decorate(shift, segment, segDate, offDays));
+            totalMinutes += segment.minutes;
+          }
+        }
+      }
       return {
         staffId,
         name,
         position,
-        cells: dates.map((date) => ({
-          date,
-          shifts: mine.filter((s) => s.date === date).map((s) => decorate(s, offDays)),
-        })),
-        hours: formatHours(mine.reduce((sum, s) => sum + shiftMinutes(s.start, s.end), 0)),
+        cells,
+        hours: formatHours(totalMinutes),
       };
     };
 
     const rows = this.staff.byBranch(branchId).map((m) => rowFor(m.id, m.name, m.position));
+    const weekShifts = shifts.filter((s) => s.date >= start && s.date <= addDays(start, 6));
+
+    const days = dates.map((date, index) => {
+      const staffOnDay = new Set<number>();
+      for (const row of rows) {
+        for (const shift of row.cells[index].shifts) {
+          if (shift.staffId !== null) staffOnDay.add(shift.staffId);
+        }
+      }
+      return { date, today: date === today, headcount: staffOnDay.size };
+    });
+
     return {
-      days: dates.map((date) => ({
-        date,
-        today: date === today,
-        headcount: new Set(shifts.filter((s) => s.date === date && s.staffId !== null).map((s) => s.staffId)).size,
-      })),
+      days,
       rows,
       openRow: rowFor(null, 'Open shifts', 'Anyone in the branch can take these'),
-      shiftCount: shifts.length,
+      shiftCount: weekShifts.length,
     };
   }
 }

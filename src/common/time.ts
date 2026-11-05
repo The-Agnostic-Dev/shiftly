@@ -27,6 +27,32 @@ export function shiftMinutes(start: string, end: string): number {
   return e > s ? e - s : e + DAY_MINUTES - s;
 }
 
+export interface ShiftSegment {
+  dayOffset: number;
+  start: string;
+  end: string;
+  minutes: number;
+}
+
+/**
+ * Split a shift into calendar-day segments. A shift that stays within one
+ * day is a single segment with dayOffset 0. An overnight shift is split at
+ * midnight: the part before midnight belongs to the start day (dayOffset 0,
+ * ending at 24:00) and the part after midnight belongs to the next day
+ * (dayOffset 1, starting at 00:00).
+ */
+export function splitShift(shift: { start: string; end: string }): ShiftSegment[] {
+  const s = toMinutes(shift.start);
+  const e = toMinutes(shift.end);
+  if (e > s) {
+    return [{ dayOffset: 0, start: shift.start, end: shift.end, minutes: e - s }];
+  }
+  return [
+    { dayOffset: 0, start: shift.start, end: '24:00', minutes: DAY_MINUTES - s },
+    { dayOffset: 1, start: '00:00', end: shift.end, minutes: e },
+  ];
+}
+
 interface Span {
   start: string;
   end: string;

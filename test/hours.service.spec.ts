@@ -1,4 +1,4 @@
-import { todayInLagos, weekStart } from '../src/common/dates';
+import { addDays, todayInLagos, weekStart } from '../src/common/dates';
 import { services } from './helpers';
 
 describe('HoursService', () => {
@@ -27,5 +27,19 @@ describe('HoursService', () => {
     await shifts.create('lekki', { staffId: 6, date: week, start: '09:00', end: '13:00', position: 'Waiter', note: '' }, 'Test');
     const after = hours.forWeek('lekki', week).rows.find((r) => r.member.id === 6)!.hours;
     expect(after).toBe(before + 4);
+  });
+
+  it('counts overnight shift hours across weeks correctly', () => {
+    const thisWeek = weekStart(todayInLagos());
+    const nextWeek = addDays(thisWeek, 7);
+    const { hours } = services();
+    const chidiThisWeek = hours.forWeek('lekki', thisWeek).rows.find((r) => r.member.name === 'Chidi Okonkwo')!;
+    const chidiNextWeek = hours.forWeek('lekki', nextWeek).rows.find((r) => r.member.name === 'Chidi Okonkwo')!;
+
+    // Sunday 22:00–06:00 contributes 2h to this week and 6h to next week.
+    expect(chidiThisWeek.hours).toBe(34);
+    expect(chidiNextWeek.hours).toBe(40);
+    // The continuation is not a separate shift; shift count excludes previous week's Sunday shift.
+    expect(chidiNextWeek.shifts).toBe(5);
   });
 });
