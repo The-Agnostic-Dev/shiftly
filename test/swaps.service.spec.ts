@@ -22,6 +22,16 @@ describe('SwapsService', () => {
     expect(pending.status).toBe('approved');
   });
 
+  it('offers only same-branch colleagues in the swap candidate list', async () => {
+    const ctx = services();
+    const shift = shiftOf(ctx, 1, nextWeek);
+    const candidates = await ctx.swaps.candidatesFor(shift.id);
+    const ids = candidates.map((c) => c.id).sort((a, b) => a - b);
+    expect(ids).toEqual([2, 3, 4, 5, 6, 7]);
+    expect(candidates.some((c) => c.name === 'Kemi Ogunleye')).toBe(false);
+    expect(candidates.some((c) => c.name === 'Femi Lawal')).toBe(false);
+  });
+
   it('records a declined request without touching the rota', async () => {
     const ctx = services();
     const shift = shiftOf(ctx, 1, nextWeek);
