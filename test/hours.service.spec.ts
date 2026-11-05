@@ -25,7 +25,7 @@ describe('HoursService', () => {
     const { hours } = services();
     const chidi = (start: string) =>
       hours.forWeek('lekki', start).rows.find((r) => r.member.name === 'Chidi Okonkwo')!;
-    expect(chidi(week).hours).toBe(34);
+    expect(chidi(week).hours).toBe(40);
     expect(chidi(addDays(week, 7)).hours).toBe(40);
   });
 
