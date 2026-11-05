@@ -62,7 +62,7 @@ export class RotaService {
       start: portion.start,
       end: portion.end,
       hours: formatHours(portion.minutes),
-      overnight: portion.date === portion.shift.date && isOvernight(portion.shift.start, portion.shift.end),
+      overnight: isOvernight(portion.shift.start, portion.shift.end),
       unavailable: offDays.includes(isoWeekday(portion.shift.date)),
     });
 
