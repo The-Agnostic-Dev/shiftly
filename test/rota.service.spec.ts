@@ -1,4 +1,5 @@
 import { addDays, todayInLagos, weekStart } from '../src/common/dates';
+import { RotaService } from '../src/rota/rota.service';
 import { services } from './helpers';
 
 describe('RotaService', () => {
@@ -6,7 +7,7 @@ describe('RotaService', () => {
   const nextWeek = addDays(thisWeek, 7);
 
   it('shows the before-midnight portion of an overnight shift on its start day', () => {
-    const rota = (services() as any).rota;
+    const rota: RotaService = (services() as any).rota;
     const weekView = rota.week('lekki', thisWeek);
     const sunday = weekView.days.find((d) => d.date === addDays(thisWeek, 6))!;
     const chidiRow = weekView.rows.find((r) => r.name === 'Chidi Okonkwo')!;
@@ -17,7 +18,7 @@ describe('RotaService', () => {
   });
 
   it('shows the after-midnight portion on the next day and includes staff in headcount', () => {
-    const rota = (services() as any).rota;
+    const rota: RotaService = (services() as any).rota;
     const nextWeekView = rota.week('lekki', nextWeek);
     const monday = nextWeekView.days.find((d) => d.date === nextWeek)!;
     const chidiRow = nextWeekView.rows.find((r) => r.name === 'Chidi Okonkwo')!;
@@ -29,7 +30,7 @@ describe('RotaService', () => {
   });
 
   it('sums only the segments that fall inside the displayed week', () => {
-    const rota = (services() as any).rota;
+    const rota: RotaService = (services() as any).rota;
     const thisWeekView = rota.week('lekki', thisWeek);
     const chidiRow = thisWeekView.rows.find((r) => r.name === 'Chidi Okonkwo')!;
     expect(chidiRow.hours).toBe(34);
