@@ -1,12 +1,12 @@
 import type hbsModule from 'hbs';
-import { formatDayMonth } from '../common/dates';
+import { formatDayMonth, isoWeekday } from '../common/dates';
 import { formatAmount, formatNaira } from '../common/money';
 
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export function registerHelpers(hbs: typeof hbsModule): void {
   hbs.registerHelper('eq', (a: unknown, b: unknown) => a === b);
-  hbs.registerHelper('dayName', (date: string) => DAY_NAMES[new Date(`${date}T00:00:00Z`).getUTCDay()]);
+  hbs.registerHelper('dayName', (date: string) => DAY_NAMES[isoWeekday(date) - 1]);
   hbs.registerHelper('dayMonth', (date: string) => formatDayMonth(date));
   hbs.registerHelper('naira', (amount: number) => formatNaira(amount));
   hbs.registerHelper('amount', (amount: number) => formatAmount(amount));
