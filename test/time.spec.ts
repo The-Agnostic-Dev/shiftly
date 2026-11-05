@@ -23,12 +23,17 @@ describe('shift times', () => {
   });
 
   it('splits overnight shifts at midnight', () => {
-    expect(splitShift('09:00', '17:00')).toEqual([{ dayOffset: 0, minutes: 480 }]);
-    expect(splitShift('22:00', '06:00')).toEqual([
-      { dayOffset: 0, minutes: 120 },
-      { dayOffset: 1, minutes: 360 },
+    expect(splitShift({ start: '09:00', end: '17:00' })).toEqual([
+      { dayOffset: 0, start: '09:00', end: '17:00', minutes: 480 },
     ]);
-    expect(splitShift('16:00', '00:00')).toEqual([{ dayOffset: 0, minutes: 480 }]);
+    expect(splitShift({ start: '22:00', end: '06:00' })).toEqual([
+      { dayOffset: 0, start: '22:00', end: '24:00', minutes: 120 },
+      { dayOffset: 1, start: '00:00', end: '06:00', minutes: 360 },
+    ]);
+    expect(splitShift({ start: '16:00', end: '00:00' })).toEqual([
+      { dayOffset: 0, start: '16:00', end: '24:00', minutes: 480 },
+      { dayOffset: 1, start: '00:00', end: '00:00', minutes: 0 },
+    ]);
   });
 
   it('formats hours without trailing zeros', () => {
