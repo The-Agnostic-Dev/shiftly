@@ -41,7 +41,7 @@ export class SwapsService {
 
   /** Colleagues who could take this shift instead. */
   candidatesFor(shift: Shift): StaffMember[] {
-    return this.staff.all().filter((m) => m.id !== shift.staffId);
+    return this.staff.byBranch(shift.branchId).filter((m) => m.id !== shift.staffId);
   }
 
   ownShift(shiftId: number, staffId: number): Shift {
