@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { addDays } from '../common/dates';
 import { OVERTIME_MULTIPLIER, roundKobo, STANDARD_WEEK_HOURS } from '../common/money';
 import { RotaEvents } from '../common/rota-events';
-import { toMinutes } from '../common/time';
+import { splitShift } from '../common/time';
 import { StaffService } from '../staff/staff.service';
 import { StoreService } from '../store/store.service';
-import type { Shift, StaffMember } from '../store/types';
+import type { StaffMember } from '../store/types';
 
 interface Tally {
   shifts: number;
@@ -73,10 +73,13 @@ export class HoursService {
     const tallies = new Map<number, Tally>();
     for (const shift of this.store.db.shifts) {
       if (shift.branchId !== branchId || shift.staffId === null) continue;
-      if (shift.date < weekStart || shift.date > weekEnd) continue;
+      const portions = splitShift(shift).filter((portion) => portion.date >= weekStart && portion.date <= weekEnd);
+      if (portions.length === 0) continue;
       const tally = tallies.get(shift.staffId) ?? { shifts: 0, minutes: 0 };
       tally.shifts += 1;
-      tally.minutes += workedMinutes(shift);
+      for (const portion of portions) {
+        tally.minutes += portion.minutes;
+      }
       tallies.set(shift.staffId, tally);
     }
     this.tallies.set(key, tallies);
@@ -88,9 +91,4 @@ export class HoursService {
       if (key.startsWith(`${branchId}:`)) this.tallies.delete(key);
     }
   }
-}
-
-/** Minutes worked on a shift. Overnight shifts count in full on the day they start. */
-function workedMinutes(shift: Shift): number {
-  return Math.max(0, toMinutes(shift.end) - toMinutes(shift.start));
 }

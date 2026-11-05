@@ -1,4 +1,4 @@
-import { formatHours, isOvernight, isTime, overlaps, shiftMinutes } from '../src/common/time';
+import { formatHours, isOvernight, isTime, overlaps, shiftMinutes, splitShift } from '../src/common/time';
 
 describe('shift times', () => {
   it('accepts 24 hour times only', () => {
@@ -20,6 +20,19 @@ describe('shift times', () => {
     expect(overlaps({ start: '10:00', end: '18:00' }, { start: '17:00', end: '22:00' })).toBe(true);
     expect(overlaps({ start: '10:00', end: '18:00' }, { start: '18:00', end: '22:00' })).toBe(false);
     expect(overlaps({ start: '22:00', end: '06:00' }, { start: '23:00', end: '23:30' })).toBe(true);
+  });
+
+  it('splits an overnight shift at midnight', () => {
+    expect(splitShift({ date: '2026-01-04', start: '22:00', end: '06:00' })).toEqual([
+      { date: '2026-01-04', start: '22:00', end: '24:00', minutes: 120 },
+      { date: '2026-01-05', start: '00:00', end: '06:00', minutes: 360 },
+    ]);
+  });
+
+  it('keeps a day shift in one portion', () => {
+    expect(splitShift({ date: '2026-01-04', start: '09:00', end: '17:00' })).toEqual([
+      { date: '2026-01-04', start: '09:00', end: '17:00', minutes: 480 },
+    ]);
   });
 
   it('formats hours without trailing zeros', () => {

@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { AvailabilityService } from '../availability/availability.service';
 import { addDays, todayInLagos, weekDates } from '../common/dates';
-import { formatHours, isOvernight, shiftMinutes } from '../common/time';
+import { formatHours, isOvernight, shiftMinutes, splitShift } from '../common/time';
+import type { ShiftPortion } from '../common/time';
 import { ShiftsService } from '../shifts/shifts.service';
 import { StaffService } from '../staff/staff.service';
 import type { Shift } from '../store/types';
@@ -43,27 +44,40 @@ export class RotaService {
   week(branchId: string, start: string): RotaWeek {
     const dates = weekDates(start);
     const today = todayInLagos();
-    const shifts = this.shifts.forBranch(branchId, start, addDays(start, 6));
+    const shifts = this.shifts.forBranch(branchId, addDays(start, -1), addDays(start, 6));
 
-    const decorate = (shift: Shift, offDays: number[]): RotaShift => ({
-      ...shift,
-      hours: formatHours(shiftMinutes(shift.start, shift.end)),
-      overnight: isOvernight(shift.start, shift.end),
-      unavailable: offDays.includes(new Date(`${shift.date}T00:00:00Z`).getUTCDay()),
+    interface Portion extends ShiftPortion {
+      shift: Shift;
+    }
+
+    const portions: Portion[] = shifts.flatMap((shift) =>
+      splitShift(shift)
+        .filter((p) => dates.includes(p.date))
+        .map((p) => ({ ...p, shift })),
+    );
+
+    const decorate = (portion: Portion, offDays: number[]): RotaShift => ({
+      ...portion.shift,
+      date: portion.date,
+      start: portion.start,
+      end: portion.end,
+      hours: formatHours(portion.minutes),
+      overnight: isOvernight(portion.start, portion.end),
+      unavailable: offDays.includes(new Date(`${portion.date}T00:00:00Z`).getUTCDay()),
     });
 
     const rowFor = (staffId: number | null, name: string, position: string): RotaRow => {
       const offDays = staffId === null ? [] : this.availability.daysFor(staffId);
-      const mine = shifts.filter((s) => s.staffId === staffId);
+      const mine = portions.filter((p) => p.shift.staffId === staffId);
       return {
         staffId,
         name,
         position,
         cells: dates.map((date) => ({
           date,
-          shifts: mine.filter((s) => s.date === date).map((s) => decorate(s, offDays)),
+          shifts: mine.filter((p) => p.date === date).map((p) => decorate(p, offDays)),
         })),
-        hours: formatHours(mine.reduce((sum, s) => sum + shiftMinutes(s.start, s.end), 0)),
+        hours: formatHours(mine.reduce((sum, p) => sum + p.minutes, 0)),
       };
     };
 
@@ -72,11 +86,11 @@ export class RotaService {
       days: dates.map((date) => ({
         date,
         today: date === today,
-        headcount: new Set(shifts.filter((s) => s.date === date && s.staffId !== null).map((s) => s.staffId)).size,
+        headcount: new Set(portions.filter((p) => p.date === date && p.shift.staffId !== null).map((p) => p.shift.staffId)).size,
       })),
       rows,
       openRow: rowFor(null, 'Open shifts', 'Anyone in the branch can take these'),
-      shiftCount: shifts.length,
+      shiftCount: portions.length,
     };
   }
 }

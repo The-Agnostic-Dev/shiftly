@@ -1,4 +1,4 @@
-import { todayInLagos, weekStart } from '../src/common/dates';
+import { addDays, todayInLagos, weekStart } from '../src/common/dates';
 import { services } from './helpers';
 
 describe('HoursService', () => {
@@ -19,6 +19,14 @@ describe('HoursService', () => {
     expect(rows.map((r) => r.member.id).sort()).toEqual(staff.byBranch('lekki').map((m) => m.id).sort());
     const empty = hours.forWeek('lekki', '2020-01-06');
     expect(empty.totalHours).toBe(0);
+  });
+
+  it('counts overnight hours on the day each portion falls', () => {
+    const { hours } = services();
+    const chidi = (start: string) =>
+      hours.forWeek('lekki', start).rows.find((r) => r.member.name === 'Chidi Okonkwo')!;
+    expect(chidi(week).hours).toBe(34);
+    expect(chidi(addDays(week, 7)).hours).toBe(40);
   });
 
   it('picks up a newly added shift', async () => {
