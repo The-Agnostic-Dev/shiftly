@@ -27,7 +27,7 @@ export class SwapsService {
     private readonly activity: ActivityService,
   ) {}
 
-  /** Requests visible to this user, most recent first. */
+  /** Requests visible to this user: waiting ones first, newest at the top, then finished ones oldest last. */
   listFor(user: User): SwapView[] {
     return this.store.db.swaps
       .map((swap) => this.view(swap))
@@ -36,7 +36,10 @@ export class SwapsService {
         if (user.role === 'manager') return swap.branchId === user.branchId;
         return swap.fromStaffId === user.staffId || swap.toStaffId === user.staffId;
       })
-      .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+      .sort((a, b) => {
+        const pending = Number(b.status === 'pending') - Number(a.status === 'pending');
+        return pending || b.createdAt.localeCompare(a.createdAt);
+      });
   }
 
   /** Colleagues who could take this shift instead. */

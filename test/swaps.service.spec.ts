@@ -40,4 +40,27 @@ describe('SwapsService', () => {
     expect(swap.status).toBe('pending');
     await expect(ctx.swaps.request(shift.id, 7, 1, 'Exam')).rejects.toThrow(ConflictException);
   });
+
+  it('shows the newest pending request first and the oldest finished request last', () => {
+    const ctx = services();
+    const views = ctx.swaps.listFor(manager);
+    expect(views[0].reason).toBe("My daughter's naming ceremony");
+    expect(views[0].status).toBe('pending');
+    expect(views[views.length - 1].reason).toBe('Family wedding in Enugu');
+    expect(views.filter((v) => v.status === 'pending').map((v) => v.reason)).toEqual([
+      "My daughter's naming ceremony",
+      'Hospital appointment for my mum',
+    ]);
+    expect(views.map((v) => v.status)).toEqual(['pending', 'pending', 'declined', 'approved']);
+  });
+
+  it('keeps a request finished today below the ones still waiting', async () => {
+    const ctx = services();
+    const swap = ctx.store.db.swaps.find((s) => s.reason === 'Hospital appointment for my mum')!;
+    await ctx.swaps.decline(swap.id, manager);
+    const views = ctx.swaps.listFor(manager);
+    expect(views[0].reason).toBe("My daughter's naming ceremony");
+    expect(views.slice(1).every((v) => v.status !== 'pending')).toBe(true);
+    expect(views.findIndex((v) => v.id === swap.id)).toBeGreaterThan(0);
+  });
 });
